@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -120,7 +121,7 @@ Route::get('/aluno/nome/{nome}', function ($nome) {
 })->where('nome', '[A-Za-z]+');
 
 //5
-Route::get('/aluno/nota', function () {
+Route::get('/nota', function () {
     $dados = array(
         1 => array("nome" => "Carlos Eduardo", "nota" => 8.5),
         2 => array("nome" => "Maria Claudia", "nota" => 9.0),
@@ -137,7 +138,7 @@ Route::get('/aluno/nota', function () {
 });
 
 //6
-Route::get('/aluno/nota/limite/{quantidade}', function ($quantidade) {
+Route::get('/nota/limite/{quantidade}', function ($quantidade) {
     $dados = array(
         1 => array("nome" => "Carlos Eduardo", "nota" => 8.5),
         2 => array("nome" => "Maria Claudia", "nota" => 9.0),
@@ -157,6 +158,88 @@ Route::get('/aluno/nota/limite/{quantidade}', function ($quantidade) {
 
     return "<h1>Matricula Aluno Nota</h1>$notas";
 })->where('quantidade', '[0-9]+')->where('nome', '[A-Za-z]+');
+
+//7
+Route::get('/nota/lancar/{matricula}/{nota}/{nome?}', function ($matricula, $nota, $nome = null) {
+    $dados = array(
+        1 => array("nome" => "Carlos Eduardo", "nota" => 8.5),
+        2 => array("nome" => "Maria Claudia", "nota" => 9.0),
+        3 => array("nome" => "Joao Pedro", "nota" => 7.2)
+    );
+
+    if (!is_numeric($nota)) {
+        return abort(404);
+    }
+
+    if ($nome !== null) {
+        $alunoEncontrado = false;
+        foreach ($dados as $matriculaAluno => $aluno) {
+            if (strtolower($aluno['nome']) === strtolower($nome)) {
+                $dados[$matriculaAluno]['nota'] = $nota;
+                $alunoEncontrado = true;
+                break;
+            }
+        }
+        if (!$alunoEncontrado) {
+            return "Aluno não encontrado.";
+        }
+    } elseif (is_numeric($matricula) && array_key_exists($matricula, $dados)) {
+        $dados[$matricula]['nota'] = $nota;
+    } else {
+        return "Aluno não encontrado.";
+    }
+
+    $notas = "<ul>";
+    foreach ($dados as $matriculaAluno => $aluno) {
+        $notas .= "<li>Matrícula: $matriculaAluno, Nome: {$aluno['nome']}, Nota: {$aluno['nota']}</li>";
+    }
+    $notas .= "</ul>";
+
+    return "<h1>Lançar Nota</h1><h2>Notas dos Alunos (Atualizada)</h2>$notas";
+});
+
+//8get
+Route::get('/nota/conceito/{a}/{b}/{c}', function ($a, $b, $c) {
+    $dados = array(
+        1 => array("nome" => "Carlos Eduardo", "nota" => 8.5),
+        2 => array("nome" => "Maria Claudia", "nota" => 9.0),
+        3 => array("nome" => "Joao Pedro", "nota" => 7.2)
+    );
+
+    if (!is_numeric($a) || !is_numeric($b) || !is_numeric($c)) {
+        return abort(404);
+    }
+
+    $conceitos = array();
+    foreach ($dados as $matricula => $aluno) {
+        $nota = $aluno['nota'];
+        if ($nota >= $a) {
+            $conceitos[$matricula] = "A";
+        } elseif ($nota >= $b) {
+            $conceitos[$matricula] = "B";
+        } elseif ($nota >= $c) {
+            $conceitos[$matricula] = "C";
+        } else {
+            $conceitos[$matricula] = "D";
+        }
+    }
+
+    $conceitoList = "<ul>";
+    foreach ($conceitos as $matricula => $conceito) {
+        $aluno = $dados[$matricula];
+        $conceitoList .= "<li>Matrícula: $matricula, Nome: {$aluno['nome']}, Conceito: $conceito</li>";
+    }
+    $conceitoList .= "</ul>";
+
+    return "<h1>Conceitos dos Alunos</h1>$conceitoList";
+});
+//8post
+    Route::post('nota/conceito/{a}/{b}/{c}', function(Request $request)){
+        return 
+}
+
+
+
 
 
 
